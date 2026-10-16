@@ -18,6 +18,28 @@ def init():
   if c.execute("SELECT COUNT(*) FROM guests").fetchone()[0]==0:
    for s in SEEDS:
     c.execute("INSERT INTO guests(name,company,country,email,notes) VALUES(?,?,?,?,?)",(s[0],s[1],s[2],s[3] if len(s)>3 else "","Bring an additional technical colleague if useful" if s[0] in ("Andreas Schulze","Tobias Mayer","Christian Kuntze","Daniel Seeger") else ""))
+
+  # Backfill only empty contact details. Existing team changes always win.
+  verified_contacts=[
+   ("Christian Kuntze","Sigma","ck@sigma-av.com"),
+   ("Andreas Schulze","inSynergie","schulze@insynergie.de"),
+   ("Tobias Mayer","satis&fy","TobiasMayer@satis-fy.com"),
+   ("Daniel Seeger","Neumann & Mueller","Daniel.Seeger@neumannmueller.com"),
+   ("Sven Fischer","Project Syntropy","fischer@project-syntropy.de"),
+   ("Alexandre Willame","Trio-Tech","a.willame@trio-tech.com"),
+   ("John Mould","ST Engineering Antycip","John.Mould@steantycip.com"),
+   ("Vangelis Petridis","Omikron","petridis@omikron.gr"),
+   ("Simon Reed","Beyond Light","simonr@lightfield.london"),
+   ("Morgan Wong","Dataton-Umfeld","watchoutmorgan@gmail.com"),
+   ("Dimitris","Omikron","mastrokolias@omikron.gr"),
+   ("David Butler","Pixsper","info@pixsper.com"),
+   ("Noemie Waterlot","VIDEMUS","info@videmus.fr")
+  ]
+  for name,company,email in verified_contacts:
+   c.execute("UPDATE guests SET email=? WHERE name=? AND company=? AND (email IS NULL OR TRIM(email)='')",(email,name,company))
+  c.execute("UPDATE guests SET name='Dimitris Mastrokolias' WHERE name='Dimitris' AND company='Omikron'")
+  c.execute("UPDATE guests SET notes=CASE WHEN TRIM(COALESCE(notes,''))='' THEN ? ELSE notes END WHERE name=? AND company=?",("General company address (not personal); confirm direct contact before inviting","David Butler","Pixsper"))
+  c.execute("UPDATE guests SET notes=CASE WHEN TRIM(COALESCE(notes,''))='' THEN ? ELSE notes END WHERE name=? AND company=?",("General VIDEMUS address; WATCHOUT Academy takes place Dec 9–10, check availability","Noemie Waterlot","VIDEMUS"))
 class API(BaseHTTPRequestHandler):
  def out(self,status,obj,ctype="application/json; charset=utf-8"):
   b=(json.dumps(obj,ensure_ascii=False).encode() if ctype.startswith("application/json") else obj)
