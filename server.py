@@ -46,9 +46,9 @@ class API(BaseHTTPRequestHandler):
   if "rsvp" in obj and obj["rsvp"] not in ("Offen","Zusage","Absage","Vielleicht"):raise ValueError("Invalid RSVP")
   return obj
  def do_GET(self):
-  if not self.auth():return
   path=urlparse(self.path).path
   if path=="/api/health":return self.out(200,{"ok":True})
+  if not self.auth():return
   if path=="/api/guests":
    with lock,conn() as c: rows=[dict(x) for x in c.execute("SELECT * FROM guests ORDER BY id")]
    return self.out(200,rows)
