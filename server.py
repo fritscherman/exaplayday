@@ -52,6 +52,7 @@ class API(BaseHTTPRequestHandler):
   if path=="/api/guests":
    with lock,conn() as c: rows=[dict(x) for x in c.execute("SELECT * FROM guests ORDER BY id")]
    return self.out(200,rows)
+  if path=="/event":return self.out(200,(ROOT/"event.html").read_bytes(),"text/html; charset=utf-8")
   if path in ("/","/index.html"):return self.out(200,(ROOT/"index.html").read_bytes(),"text/html; charset=utf-8")
   return self.out(404,{"error":"Not found"})
  def do_POST(self):
