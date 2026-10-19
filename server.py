@@ -17,7 +17,7 @@ PROPOSED_CONTACTS=[
  ("Lutz Bayer","Aufwind Group","lutz.bayer@aufwind-group.de","personal","aufwind-group.de/de/people","CEO aufwind RIDES (Simulatoren, Media Rides, Dark Rides, Malterdingen). Hook: Podcoaster-Folge PC087 ueber den Weg von der Agentur zum Ride-Hersteller."),
  ("Eddy Yanto","Omnigram","eddy@omnigram.net","personal","omnigram.net (Kontaktadresse), Titel laut AVIXA-Profil","Principal Omnigram Singapore. Listet VIOSO Auto-Alignment auf der eigenen Website. Hook: 'Light of Gelam' Mapping Sultan Mosque, Singapore Odyssea, Wings of Time."),
  ("Hardeep Toor","Pixel Frame","hardeep.toor@pixelframe.co.uk","personal","pixelframe.co.uk","Founder, freelance Video Tech / Technical PM. Media-Server in Millumin und PIXERA, vMix. Konferenzen, Launches, Fashion Shows."),
- ("Fabian Miodek","Aufwind","","personal","aufwind-group.de/de/people","Achtung: auf der Teamseite steht FLORIAN Miodek (Rides), florian.miodek@aufwind-group.de. Vorname vor Versand klaeren."),
+ ("Florian Miodek","Aufwind","florian.miodek@aufwind-group.de","personal","aufwind-group.de/de/people","Rides-Team aufwind group. Liste nannte 'Fabian', Teamseite fuehrt Florian Miodek."),
  # General company addresses (person not named on the site)
  ("Manuel Meck","BeWunder","contact@bewunder.com","general","bewunder.com/imprint","Hook: USA Pavilion 'America the Beautiful' Expo 2025 Osaka, World Government Summit 2025, Viega Media Experience Center."),
  ("Bernhard Wohlmacher","Lleyendecker","info@lleyendecker.de","general","lleyendecker.de/impressum","LLEYENDECKER GmbH Wuppertal, ~150 MA, Berlin-Niederlassung. Hook: Berlinale 2024, Telekom MWC 2024, Deichbrand 2025."),
@@ -89,6 +89,11 @@ def init():
   for name,company,email in verified_contacts:
    c.execute("UPDATE guests SET email=? WHERE name=? AND company=? AND (email IS NULL OR TRIM(email)='')",(email,name,company))
   c.execute("UPDATE guests SET name='Dimitris Mastrokolias' WHERE name='Dimitris' AND company='Omikron'")
+
+  # Corrections with clear public evidence. Applied only while the row still has the seed value.
+  c.execute("UPDATE guests SET name='Florian Miodek' WHERE name='Fabian Miodek' AND company='Aufwind'")
+  c.execute("UPDATE guests SET country='CZ' WHERE company='Virtuality.one' AND country='DE'")
+  c.execute("UPDATE guests SET country='AU' WHERE company='pixel.formation' AND country='DE'")
 
   # Proposed contacts from public web research. Only fill EMPTY e-mail fields and add a
   # "Vorschlag" note with the source so the team can verify before inviting. Never overwrite.
