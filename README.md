@@ -10,7 +10,7 @@ GitHub repository: `fritscherman/exaplayday`, branch `main`.
 
 Choose Docker Compose deployment (`docker-compose.yml`), set environment variables `APP_USER=vioso` and `APP_PASSWORD` to the password supplied separately. Do not commit your password. Set up HTTPS in Coolify; HTTP Basic Auth should **only** be used over HTTPS. Expose the service using port 8080. Persistent named Docker volume `exaplay_guest_data` holds `/app/data/exaplay.sqlite3` and survives container restarts and redeployments.
 
-Start/redeploy the application. First startup initializes a candidate list (without 3Made or Marcus Schäfer). Once initialized, subsequent deployments never overwrite team edits.
+Start/redeploy the application. First startup initializes a candidate list (without 3Made or Marcus Schäfer). Once initialized, subsequent deployments never overwrite team edits. Startup also applies `PROPOSED_CONTACTS` / `PROPOSED_LEADS` from `server.py`: publicly researched addresses fill **empty** e-mail fields only and add a `Vorschlag (…, Quelle: …), bitte prüfen` note, so the team verifies before inviting. Rows still named `Technischer Lead` are renamed to the researched contact.
 
 ## Guest workflow
 
