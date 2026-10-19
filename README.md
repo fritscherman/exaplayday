@@ -1,6 +1,8 @@
 # EXAPLAY Tech Day Guest Lab
 
-Collaborative guest shortlist with SQLite, live refresh (10 seconds) and Basic Auth.
+Collaborative guest shortlist with SQLite, live refresh (10 seconds) and Basic Auth. Both pages follow the VIOSO corporate design (Quicksand, #0095db / #00eaa9 on #212121, diagonal gradients, oblique lines, hexagon pattern) via `static/vioso.css`.
+
+`/` and `/api/*` require Basic Auth. `/event` (the invitation page linked from the e-mails) and `/static/*` are public so invited guests can open the agenda without a login.
 
 ## Deploy using Coolify
 

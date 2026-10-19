@@ -1,0 +1,60 @@
+/* VIOSO corporate design tokens – based on VIOSO Styleguide 22.2 */
+:root{
+  --vioso-blue:#0095db;
+  --vioso-green:#00eaa9;
+  --vioso-bg:#212121;
+  --vioso-bg-2:#2a2a2a;
+  --vioso-bg-3:#333333;
+  --vioso-line:#3d3d3d;
+  --vioso-text:#ffffff;
+  --vioso-muted:#b5b5b5;
+  --vioso-dim:#8a8a8a;
+  --vioso-gradient:linear-gradient(135deg,var(--vioso-blue),var(--vioso-green));
+  --radius:10px;
+  --font:"Quicksand","Segoe UI",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--vioso-bg);color:var(--vioso-text);font:400 16px/1.6 var(--font)}
+h1,h2,h3,h4{font-weight:500;color:var(--vioso-text);margin:0 0 .4em;line-height:1.15}
+h1{font-size:clamp(34px,5vw,60px)}
+h2{font-size:clamp(26px,3.4vw,38px)}
+h3{font-size:20px}
+p{color:var(--vioso-muted);margin:.4em 0 1em}
+a{color:var(--vioso-blue);text-decoration:none}
+a:hover{color:var(--vioso-green)}
+strong{font-weight:700}
+.blue{color:var(--vioso-blue)}
+.green{color:var(--vioso-green)}
+.eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--vioso-blue);font-weight:700}
+/* Wordmark: VIOSO always set in capital letters, horizontal only */
+.vioso-wordmark{display:inline-flex;align-items:center;gap:.3em;font-family:var(--font);font-weight:500;letter-spacing:.06em;color:var(--vioso-blue);text-decoration:none;line-height:1}
+.vioso-wordmark svg{height:1em;width:auto;display:block}
+.vioso-wordmark span{color:var(--vioso-muted);font-weight:400;letter-spacing:.02em;font-size:.72em}
+/* Oblique line – a ray of light, always diagonal */
+.ray{position:relative;overflow:hidden}
+.ray::before{content:"";position:absolute;inset:-40% auto -40% 74%;width:3px;background:var(--vioso-gradient);transform:rotate(32deg);transform-origin:center;opacity:.9;pointer-events:none}
+/* Hexagon pattern – derived from the software icon shape */
+.hex{position:relative}
+.hex::after{content:"";position:absolute;inset:0;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='97' viewBox='0 0 56 97'><g fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='2.4'><path d='M28 2.3 52.5 16.4v28.2L28 58.8 3.5 44.6V16.4z'/><path d='M28 50.8 52.5 64.9v28.2L28 107.3 3.5 93.1V64.9z'/><path d='M-27 50.8-2.5 64.9v28.2L-27 107.3-51.5 93.1V64.9z' transform='translate(56 -48.5)'/></g></svg>");background-size:56px 97px;clip-path:polygon(58% 0,100% 0,100% 100%,32% 100%);-webkit-mask-image:linear-gradient(135deg,transparent 35%,#000 100%);mask-image:linear-gradient(135deg,transparent 35%,#000 100%)}
+.hex>*{position:relative;z-index:1}
+/* Controls */
+button,input,textarea,select{font:inherit;font-family:var(--font)}
+button{cursor:pointer;border:1px solid var(--vioso-blue);background:transparent;color:var(--vioso-text);padding:9px 14px;border-radius:var(--radius);font-weight:500;transition:background .15s,color .15s,border-color .15s}
+button:hover{background:var(--vioso-blue);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--vioso-green);outline-offset:1px}
+.accent{background:var(--vioso-blue);border-color:var(--vioso-blue);color:#fff}
+.accent:hover{background:var(--vioso-green);border-color:var(--vioso-green);color:var(--vioso-bg)}
+.ghost{border-color:var(--vioso-line);color:var(--vioso-muted)}
+.ghost:hover{border-color:var(--vioso-blue);background:transparent;color:#fff}
+.danger{border-color:#8a3a46;color:#ff9aa6}
+.danger:hover{background:#a63a4a;border-color:#a63a4a;color:#fff}
+input,textarea,select{border:1px solid var(--vioso-line);border-radius:8px;background:var(--vioso-bg);color:var(--vioso-text);padding:9px 11px;width:100%}
+input::placeholder,textarea::placeholder{color:var(--vioso-dim)}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--vioso-blue)}
+.card{background:var(--vioso-bg-2);border:1px solid var(--vioso-line);border-radius:var(--radius)}
+.hint{font-size:12px;color:var(--vioso-dim)}
+.ok{color:var(--vioso-green)}
+.err{color:#ff9aa6}
+.foot{font-size:13px;color:var(--vioso-dim)}
+@media(max-width:900px){.ray::before{display:none}}
