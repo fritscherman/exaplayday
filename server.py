@@ -8,7 +8,7 @@ STATIC_TYPES={".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"im
 DATA=Path(os.getenv("DATA_DIR","/app/data"));DATA.mkdir(parents=True,exist_ok=True)
 DB=DATA/"exaplay.sqlite3"
 lock=threading.RLock()
-COLS=["name","company","country","email","role","priority","decision","owner","invitation","done","feedback","rsvp","hotel","food","plus_one","notes"]
+COLS=["name","company","country","email","role","priority","decision","owner","invitation","done","feedback","rsvp","hotel","food","plus_one","notes","rating"]
 SEEDS=[
 ("Dimitris","Omikron","GR"),("Christian Kuntze","Sigma","DE","ck@sigma-av.com"),("Andre Bauer","M2 Projects","DE"),("Maarten van Sloten","Specialelektronik","NL"),("Andreas Schulze","inSynergie","DE","schulze@insynergie.de"),("Manuel Meck","BeWunder","DE"),("Sven Fischer","Project Syntropy","DE"),("Fabian Miodek","Aufwind","DE"),("Sebastian Geenz","Kontakt pruefen","DE"),("Guillem","Mago Pop","ES"),("Lutz Bayer","Aufwind Group","DE"),("Eddy Yanto","Omnigram","SG"),("Bernhard Wohlmacher","Lleyendecker","DE"),("John Mould","ST Engineering Antycip","UK"),("Morgan Wong","Dataton-Umfeld","UK"),("Jose Lopez de Paula","Mago Pop","ES"),("Eirik Jahre","NexusExperia","NO"),("Dustin Mueller","studio : 3","DE"),("Fedor Stuhrmann","studio : 3","DE"),("Bodo Gottschalk","STUDIO6","DE"),("Martin Vronsky","Signal Space","CZ"),("Misha","L&F","UK"),("Tobias Mayer","satis&fy","DE","TobiasMayer@satis-fy.com"),("Daniel Seeger","Neumann & Mueller","DE","Daniel.Seeger@neumannmueller.com"),("Simon Reed","Beyond Light","UK"),("Alexandre Willame","Trio-Tech","BE"),("Vangelis Petridis","Omikron","GR","petridis@omikron.gr"),("Peter Topping","DVS","UK"),("Noemie Waterlot","VIDEMUS","FR"),("David Butler","Pixsper","UK"),("Hardeep Toor","Pixel Frame","UK"),("Barret Hodgson","Vent Media","UK"),("Tomás Saragaço","Independent media engineer","PT"),("Dennis Pohland","DP Entertainment","DE"),("Manuel Breithaupt","Pixway","DE"),("Paul Meffert","Pixway","DE"),("Sebastian Sittig","media ivent","DE"),("Stefan Ihmig","RE:SORB","DE"),("Brad Hurle","Diverse AV","AU"),("Rossi TC Chou","BenQ","TW"),("Ben Moors","BenQ","EU"),("Matteo","Epson","EU"),("Daniel / technical lead","N&M / technical","DE"),("Technischer Lead","Virtuality.one","DE"),("Technischer Lead","pixel.formation","DE"),("Technischer Lead","Ktech Media Solutions","UK"),("Technischer Lead","Videlio","FR"),("Technischer Lead","ADSI","FR"),("Technischer Lead","VIDEMUS","FR")]
 # Filled from public sources (company sites, imprints, press pages). See README.
@@ -65,6 +65,8 @@ def init():
  with lock,conn() as c:
   c.execute("PRAGMA journal_mode=WAL")
   c.execute("""CREATE TABLE IF NOT EXISTS guests(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,company TEXT NOT NULL,country TEXT DEFAULT '',email TEXT DEFAULT '',role TEXT DEFAULT '',priority TEXT DEFAULT 'B',decision TEXT DEFAULT 'Offen',owner TEXT DEFAULT '',invitation TEXT DEFAULT '',done INTEGER DEFAULT 0,feedback TEXT DEFAULT '',rsvp TEXT DEFAULT 'Offen',hotel TEXT DEFAULT '',food TEXT DEFAULT '',plus_one TEXT DEFAULT '',notes TEXT DEFAULT '',updated_at TEXT DEFAULT CURRENT_TIMESTAMP)""")
+  if "rating" not in [r[1] for r in c.execute("PRAGMA table_info(guests)")]:
+   c.execute("ALTER TABLE guests ADD COLUMN rating INTEGER DEFAULT 0")
   if c.execute("SELECT COUNT(*) FROM guests").fetchone()[0]==0:
    for s in SEEDS:
     c.execute("INSERT INTO guests(name,company,country,email,notes) VALUES(?,?,?,?,?)",(s[0],s[1],s[2],s[3] if len(s)>3 else "","Bring an additional technical colleague if useful" if s[0] in ("Andreas Schulze","Tobias Mayer","Christian Kuntze","Daniel Seeger") else ""))
@@ -138,7 +140,9 @@ class API(BaseHTTPRequestHandler):
   obj=json.loads(self.rfile.read(length))
   if not isinstance(obj,dict) or any(k not in COLS for k in obj):raise ValueError("Invalid fields")
   for k,v in obj.items():
-   if k=="done":
+   if k=="rating":
+    if isinstance(v,bool) or not isinstance(v,int) or not 0<=v<=5:raise ValueError("Invalid rating")
+   elif k=="done":
     if not isinstance(v,(bool,int)):raise ValueError("Invalid done")
    elif not isinstance(v,str) or len(v)>12000:raise ValueError("Invalid text")
   if "decision" in obj and obj["decision"] not in ("Ja","Nein","Offen"):raise ValueError("Invalid decision")
