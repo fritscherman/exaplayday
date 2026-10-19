@@ -3,6 +3,8 @@ from http.server import ThreadingHTTPServer,BaseHTTPRequestHandler
 from pathlib import Path
 from urllib.parse import urlparse
 ROOT=Path(__file__).parent
+STATIC=ROOT/"static"
+STATIC_TYPES={".css":"text/css; charset=utf-8",".svg":"image/svg+xml",".png":"image/png",".ico":"image/x-icon",".woff2":"font/woff2"}
 DATA=Path(os.getenv("DATA_DIR","/app/data"));DATA.mkdir(parents=True,exist_ok=True)
 DB=DATA/"exaplay.sqlite3"
 lock=threading.RLock()
@@ -67,14 +69,25 @@ class API(BaseHTTPRequestHandler):
   if "decision" in obj and obj["decision"] not in ("Ja","Nein","Offen"):raise ValueError("Invalid decision")
   if "rsvp" in obj and obj["rsvp"] not in ("Offen","Zusage","Absage","Vielleicht"):raise ValueError("Invalid RSVP")
   return obj
+ def static(self,path):
+  # Public assets: only plain file names inside ./static, no sub paths or traversal.
+  name=path[len("/static/"):]
+  f=STATIC/name
+  if "/" in name or name.startswith(".") or f.suffix not in STATIC_TYPES or not f.is_file():return self.out(404,{"error":"Not found"})
+  b=f.read_bytes()
+  self.send_response(200);self.send_header("Content-Type",STATIC_TYPES[f.suffix]);self.send_header("Cache-Control","public, max-age=3600");self.send_header("X-Content-Type-Options","nosniff");self.send_header("Content-Length",str(len(b)));self.end_headers();self.wfile.write(b)
  def do_GET(self):
   path=urlparse(self.path).path
   if path=="/api/health":return self.out(200,{"ok":True})
+  # Public: the invitation page is linked from the e-mails sent to guests, so it must open without a login.
+  if path.startswith("/static/"):return self.static(path)
+  if path=="/favicon.ico":return self.static("/static/favicon.svg")
+  if path in ("/event","/event/","/event.html"):return self.out(200,(ROOT/"event.html").read_bytes(),"text/html; charset=utf-8")
+  # Everything below (guest list and API) stays behind Basic Auth.
   if not self.auth():return
   if path=="/api/guests":
    with lock,conn() as c: rows=[dict(x) for x in c.execute("SELECT * FROM guests ORDER BY id")]
    return self.out(200,rows)
-  if path=="/event":return self.out(200,(ROOT/"event.html").read_bytes(),"text/html; charset=utf-8")
   if path in ("/","/index.html"):return self.out(200,(ROOT/"index.html").read_bytes(),"text/html; charset=utf-8")
   return self.out(404,{"error":"Not found"})
  def do_POST(self):
