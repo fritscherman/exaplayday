@@ -11,6 +11,9 @@ lock=threading.RLock()
 COLS=["name","company","country","email","role","priority","decision","owner","invitation","done","feedback","rsvp","hotel","food","plus_one","notes"]
 SEEDS=[
 ("Dimitris","Omikron","GR"),("Christian Kuntze","Sigma","DE","ck@sigma-av.com"),("Andre Bauer","M2 Projects","DE"),("Maarten van Sloten","Specialelektronik","NL"),("Andreas Schulze","inSynergie","DE","schulze@insynergie.de"),("Manuel Meck","BeWunder","DE"),("Sven Fischer","Project Syntropy","DE"),("Fabian Miodek","Aufwind","DE"),("Sebastian Geenz","Kontakt pruefen","DE"),("Guillem","Mago Pop","ES"),("Lutz Bayer","Aufwind Group","DE"),("Eddy Yanto","Omnigram","SG"),("Bernhard Wohlmacher","Lleyendecker","DE"),("John Mould","ST Engineering Antycip","UK"),("Morgan Wong","Dataton-Umfeld","UK"),("Jose Lopez de Paula","Mago Pop","ES"),("Eirik Jahre","NexusExperia","NO"),("Dustin Mueller","studio : 3","DE"),("Fedor Stuhrmann","studio : 3","DE"),("Bodo Gottschalk","STUDIO6","DE"),("Martin Vronsky","Signal Space","CZ"),("Misha","L&F","UK"),("Tobias Mayer","satis&fy","DE","TobiasMayer@satis-fy.com"),("Daniel Seeger","Neumann & Mueller","DE","Daniel.Seeger@neumannmueller.com"),("Simon Reed","Beyond Light","UK"),("Alexandre Willame","Trio-Tech","BE"),("Vangelis Petridis","Omikron","GR","petridis@omikron.gr"),("Peter Topping","DVS","UK"),("Noemie Waterlot","VIDEMUS","FR"),("David Butler","Pixsper","UK"),("Hardeep Toor","Pixel Frame","UK"),("Barret Hodgson","Vent Media","UK"),("Tomás Saragaço","Independent media engineer","PT"),("Dennis Pohland","DP Entertainment","DE"),("Manuel Breithaupt","Pixway","DE"),("Paul Meffert","Pixway","DE"),("Sebastian Sittig","media ivent","DE"),("Stefan Ihmig","RE:SORB","DE"),("Brad Hurle","Diverse AV","AU"),("Michael Mueller","HAMACO-Umfeld","DE"),("Rossi TC Chou","BenQ","TW"),("Ben Moors","BenQ","EU"),("Matteo","Epson","EU"),("Daniel / technical lead","N&M / technical","DE"),("Technischer Lead","Virtuality.one","DE"),("Technischer Lead","pixel.formation","DE"),("Technischer Lead","Ktech Media Solutions","UK"),("Technischer Lead","Videlio","FR"),("Technischer Lead","ADSI","FR"),("Technischer Lead","VIDEMUS","FR")]
+# Filled from public sources (company sites, imprints, press pages). See README.
+PROPOSED_CONTACTS=[
+]
 def conn():
  c=sqlite3.connect(DB,timeout=20);c.row_factory=sqlite3.Row;c.execute("PRAGMA busy_timeout=20000");return c
 def init():
@@ -40,6 +43,18 @@ def init():
   for name,company,email in verified_contacts:
    c.execute("UPDATE guests SET email=? WHERE name=? AND company=? AND (email IS NULL OR TRIM(email)='')",(email,name,company))
   c.execute("UPDATE guests SET name='Dimitris Mastrokolias' WHERE name='Dimitris' AND company='Omikron'")
+
+  # Proposed contacts from public web research. Only fill EMPTY e-mail fields and add a
+  # "Vorschlag" note with the source so the team can verify before inviting. Never overwrite.
+  # Tuple: (name, company, email, kind, source_url, extra_note)
+  for name,company,email,kind,source,extra in PROPOSED_CONTACTS:
+   row=c.execute("SELECT id,email,notes FROM guests WHERE name=? AND company=?",(name,company)).fetchone()
+   if not row:continue
+   note=("Vorschlag ("+("allgemeine Firmenadresse" if kind=="general" else "öffentlich gelistet")+", Quelle: "+source+"), bitte prüfen."+(" "+extra if extra else "")).strip()
+   if email and not (row["email"] or "").strip():
+    c.execute("UPDATE guests SET email=? WHERE id=?",(email,row["id"]))
+   if "Vorschlag (" not in (row["notes"] or "") and (email or extra):
+    c.execute("UPDATE guests SET notes=? WHERE id=?",(((row["notes"] or "").strip()+"\n"+note).strip(),row["id"]))
   c.execute("UPDATE guests SET notes=CASE WHEN TRIM(COALESCE(notes,''))='' THEN ? ELSE notes END WHERE name=? AND company=?",("General company address (not personal); confirm direct contact before inviting","David Butler","Pixsper"))
   c.execute("UPDATE guests SET notes=CASE WHEN TRIM(COALESCE(notes,''))='' THEN ? ELSE notes END WHERE name=? AND company=?",("General VIDEMUS address; WATCHOUT Academy takes place Dec 9–10, check availability","Noemie Waterlot","VIDEMUS"))
 class API(BaseHTTPRequestHandler):
